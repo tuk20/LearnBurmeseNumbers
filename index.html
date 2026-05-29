@@ -319,6 +319,20 @@
       overflow:auto;
     }
 
+    .interaction-area.input-practice{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      overflow:hidden;
+    }
+
+    .input-scroll{
+      min-height:0;
+      overflow:auto;
+      padding-bottom:4px;
+    }
+
+
     .mcq-grid{
       display:grid;
       grid-template-columns:repeat(auto-fit, minmax(170px, 1fr));
@@ -351,6 +365,17 @@
       background:#fee2e2;
       border-color:#dc2626;
       color:#991b1b;
+    }
+
+    .option-btn.selected{
+      background:#e5e7eb;
+      border-color:#111;
+      color:#111;
+    }
+
+    .option-btn:disabled{
+      cursor:not-allowed;
+      opacity:.75;
     }
 
     .input-answer{
@@ -455,6 +480,56 @@
       background:#e9e9e9;
     }
 
+    .score-summary{
+      display:none;
+      background:white;
+      border:1px solid #e7e7e7;
+      border-radius:24px;
+      padding:24px;
+      margin:0 0 32px;
+      text-align:center;
+    }
+
+    .score-summary.show{
+      display:block;
+    }
+
+    .score-summary h2{
+      font-size:22px;
+      margin-bottom:16px;
+    }
+
+    .score-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:16px;
+    }
+
+    .score-card{
+      background:#fafafa;
+      border:1px solid #ececec;
+      border-radius:18px;
+      padding:18px;
+    }
+
+    .score-card h3{
+      font-size:17px;
+      margin-bottom:8px;
+    }
+
+    .score-card p{
+      font-size:clamp(26px, 5vw, 36px);
+      font-weight:800;
+      color:#111;
+    }
+
+    .score-note{
+      color:#666;
+      line-height:1.5;
+      margin-top:14px;
+      font-size:15px;
+    }
+
     @media(max-height:760px){
       body.lesson-mode .container{
         padding:8px 16px;
@@ -505,7 +580,8 @@
         grid-template-columns:repeat(5, 1fr);
       }
 
-      .home-grid{
+      .home-grid,
+      .score-grid{
         grid-template-columns:1fr;
       }
 
@@ -570,11 +646,33 @@
 
       <nav id="homeLevelNav" class="top-nav" aria-label="Home level selection"></nav>
 
+      <section id="scoreSummary" class="score-summary" aria-label="Pre-test and final quiz score summary">
+        <h2>Learning Results</h2>
+        <div class="score-grid">
+          <div class="score-card">
+            <h3>Pre-Test Score</h3>
+            <p id="preTestScoreText">0 / 0</p>
+          </div>
+          <div class="score-card">
+            <h3>Final Quiz Score</h3>
+            <p id="finalQuizScoreText">0 / 0</p>
+          </div>
+        </div>
+        <p id="scoreComparisonText" class="score-note"></p>
+      </section>
+
       <section class="home-grid" aria-label="Course levels">
-        <button class="home-card" type="button" onclick="startLesson(1)">
+        <button class="home-card" type="button" onclick="startLesson(0)">
+          <span>
+            <h3>Pre-Test</h3>
+            <p>Complete this short quiz before Level 1 so your starting knowledge can be compared with your final results.</p>
+          </span>
+        </button>
+
+        <button id="homeCard1" class="home-card locked-home" type="button" disabled>
           <span>
             <h3>Level 1: Introduction</h3>
-            <p>Start with visual recognition, English digit matching, and pronunciation for Burmese digits 0–9.</p>
+            <p>Unlock after the Pre-Test. Start with visual recognition, English digit matching, and pronunciation for Burmese digits 0–9.</p>
           </span>
         </button>
 
@@ -601,8 +699,8 @@
 
         <button id="homeCard5" class="home-card locked-home" type="button" disabled>
           <span>
-            <h3>Level 5: Final Quiz</h3>
-            <p>Unlock after Levels 1–4. Complete a cumulative quiz to review what you learned.</p>
+            <h3>Final Quiz</h3>
+            <p>Unlock after Levels 1–4. Complete the same quiz as the Pre-Test to compare what you learned.</p>
           </span>
         </button>
       </section>
@@ -652,7 +750,7 @@
 
   <script>
     const digitReference = [
-      { burmese:"၀", english:"0", word:"Zero", audio:"thone nya" },
+      { burmese:"၀", english:"0", word:"Zero", audio:"tho nya" },
       { burmese:"၁", english:"1", word:"One", audio:"teet" },
       { burmese:"၂", english:"2", word:"Two", audio:"hnit" },
       { burmese:"၃", english:"3", word:"Three", audio:"thone" },
@@ -665,12 +763,29 @@
     ];
 
     const levels = {
+      0:{
+        title:"Pre-Test",
+        subtitle:"Answer these questions before Level 1 so your starting knowledge can be compared with your final quiz results.",
+        type:"mcq",
+        questions:[
+          { display:"Which Burmese digit represents the English number 5?", sub:"Choose the correct answer.", audio:"five", options:["၄","၆","၅","၇"], answer:"၅" },
+          { display:"What English number is represented by the Burmese digit ၃?", sub:"Choose the correct answer.", audio:"three", options:["2","4","5","3"], answer:"3" },
+          { display:"Select the Burmese numeral that means 'Eight'.", sub:"Choose the correct answer.", audio:"eight", options:["၈","၆","၇","၁"], answer:"၈" },
+          { display:"What is the correct pronunciation for the Burmese digit ၄?", sub:"Choose the correct answer.", audio:"lay", options:["Hnit","Thone","Lay","Koe"], answer:"Lay" },
+          { display:"Which Burmese digit has a pronunciation closest to 'Chauk'?", sub:"Choose the correct answer.", audio:"chauk", options:["၅","၇","၆","၈"], answer:"၆" },
+          { display:"Which Burmese numeral sequence correctly translates the English number 21?", sub:"Choose the correct answer.", audio:"twenty one", options:["၁၂","၂၁","၂၀","၂၂"], answer:"၂၁" },
+          { display:"The Burmese numeral sequence ၄၈ translates to which English number?", sub:"Choose the correct answer.", audio:"forty eight", options:["48","84","408","12"], answer:"48" },
+          { display:"Solve: ၅ + ၄ = ?", sub:"Select the answer in Burmese numerals.", audio:"nine", options:["၈","၀","၁","၉"], answer:"၉" },
+          { display:"Solve: ၇ - ၃ = ?", sub:"Select the answer in Burmese numerals.", audio:"four", options:["၁၀","၃","၄","၅"], answer:"၄" }
+        ]
+
+      },
       1:{
         title:"Level 1: Introduction",
         subtitle:"Presenting and recognizing Burmese digits (0–9) through visual recognition and pronunciation.",
         type:"mcq",
         questions:[
-          { display:"၀", sub:"Zero", audio:"thone nya", pronunciation:"thone nya", options:["0","1","2","3"], answer:"0" },
+          { display:"၀", sub:"Zero", audio:"tho nya", pronunciation:"tho nya", options:["0","1","2","3"], answer:"0" },
           { display:"၁", sub:"One", audio:"teet", pronunciation:"teet", options:["1","2","3","4"], answer:"1" },
           { display:"၂", sub:"Two", audio:"hnit", pronunciation:"hnit", options:["1","2","4","5"], answer:"2" },
           { display:"၃", sub:"Three", audio:"thone", pronunciation:"thone", options:["2","3","4","5"], answer:"3" },
@@ -717,8 +832,8 @@
         ]
       },
       5:{
-        title:"Level 5: Reflection and Comparison",
-        subtitle:"Final quiz using the MCQs from the assessment PDF to measure learning gains.",
+        title:"Final Quiz",
+        subtitle:"Complete the same questions as the Pre-Test to compare your knowledge after Levels 1–4.",
         type:"mcq",
         questions:[
           { display:"Which Burmese digit represents the English number 5?", sub:"Choose the correct answer.", audio:"five", options:["၄","၆","၅","၇"], answer:"၅" },
@@ -734,8 +849,13 @@
       }
     };
 
-    let currentLevel = 1;
+    let currentLevel = 0;
     let currentQuestion = 0;
+    let completedPreTest = false;
+    let completedFinalQuiz = false;
+    let preTestScore = null;
+    let finalQuizScore = null;
+    const testAnswers = { 0:{}, 5:{} };
     const completedLevels = { 1:false, 2:false, 3:false, 4:false };
 
     function speakText(text){
@@ -765,19 +885,27 @@
     }
 
     function isLevelUnlocked(level){
-      return level === 1 || completedLevels[level - 1] || (level === 5 && isQuizUnlocked());
+      if(level === 0) return true;
+      if(level === 1) return completedPreTest;
+      return completedLevels[level - 1] || (level === 5 && isQuizUnlocked());
+    }
+
+    function getLevelLabel(level){
+      if(level === 0) return "Pre-Test";
+      if(level === 5) return "Final Quiz";
+      return `Level ${level}`;
     }
 
     function renderHomeLevelNav(){
       const homeLevelNav = document.getElementById("homeLevelNav");
       homeLevelNav.innerHTML = "";
 
-      for(let i = 1; i <= 5; i++){
+      for(let i = 0; i <= 5; i++){
         const isUnlocked = isLevelUnlocked(i);
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "level-btn";
-        btn.textContent = isUnlocked ? `Level ${i}` : `Level ${i} 🔒`;
+        btn.textContent = isUnlocked ? getLevelLabel(i) : `${getLevelLabel(i)} 🔒`;
 
         if(!isUnlocked){
           btn.classList.add("locked");
@@ -788,18 +916,20 @@
 
         homeLevelNav.appendChild(btn);
       }
+
+      updateScoreSummary();
     }
 
     function renderLessonNav(){
       const lessonNav = document.getElementById("lessonNav");
       lessonNav.innerHTML = "";
 
-      for(let i = 1; i <= 5; i++){
+      for(let i = 0; i <= 5; i++){
         const isUnlocked = isLevelUnlocked(i);
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "level-btn";
-        btn.textContent = isUnlocked ? `Level ${i}` : `Level ${i} 🔒`;
+        btn.textContent = isUnlocked ? getLevelLabel(i) : `${getLevelLabel(i)} 🔒`;
 
         if(i === currentLevel){
           btn.classList.add("active");
@@ -834,6 +964,7 @@
       feedback.innerText = "";
 
       const interactionArea = document.getElementById("interactionArea");
+      interactionArea.className = "interaction-area";
       interactionArea.innerHTML = "";
 
       if(level.type === "mcq"){
@@ -845,17 +976,35 @@
           btn.type = "button";
           btn.className = "option-btn";
           btn.innerText = option;
+
+          if(testAnswers[currentLevel] && testAnswers[currentLevel][currentQuestion] === option){
+            if(currentLevel === 0){
+              btn.classList.add("selected");
+            } else {
+              btn.classList.add(option === q.answer ? "correct" : "wrong");
+            }
+          }
+
+          if(currentLevel === 0 && testAnswers[0][currentQuestion]){
+            btn.disabled = true;
+          }
+
           btn.onclick = () => checkMcqAnswer(btn, option, q.answer);
           grid.appendChild(btn);
         });
 
         interactionArea.appendChild(grid);
       } else {
+        interactionArea.classList.add("input-practice");
+
+        const inputScroll = document.createElement("div");
+        inputScroll.className = "input-scroll";
+
         if(currentLevel === 3 || currentLevel === 4){
           const writingHint = document.createElement("p");
           writingHint.innerHTML = "Select Burmese digits below to enter your answer.";
           writingHint.className = "writing-note";
-          interactionArea.appendChild(writingHint);
+          inputScroll.appendChild(writingHint);
         }
 
         const input = document.createElement("input");
@@ -863,13 +1012,9 @@
         input.placeholder = "Type your answer...";
         input.id = "textAnswer";
 
-        const submit = document.createElement("button");
-        submit.type = "button";
-        submit.className = "submit-btn";
-        submit.innerText = "Submit Answer";
-        submit.onclick = () => checkInputAnswer(input.value, q.answer);
+        input.oninput = () => checkInputAnswer(input.value, q.answer, true, input);
 
-        interactionArea.appendChild(input);
+        inputScroll.appendChild(input);
 
         if(currentLevel === 3 || currentLevel === 4){
           const picker = document.createElement("div");
@@ -879,13 +1024,17 @@
             digitBtn.type = "button";
             digitBtn.className = "digit-pick";
             digitBtn.innerText = item.burmese;
-            digitBtn.onclick = () => { input.value += item.burmese; input.focus(); };
+            digitBtn.onclick = () => {
+              input.value += item.burmese;
+              input.focus();
+              checkInputAnswer(input.value, q.answer, true, input);
+            };
             picker.appendChild(digitBtn);
           });
-          interactionArea.appendChild(picker);
+          inputScroll.appendChild(picker);
         }
 
-        interactionArea.appendChild(submit);
+        interactionArea.appendChild(inputScroll);
       }
 
       renderLessonNav();
@@ -895,7 +1044,24 @@
 
     function checkMcqAnswer(button, selected, answer){
       const buttons = button.parentElement.querySelectorAll("button");
+
+      if(currentLevel === 0){
+        if(testAnswers[0][currentQuestion]) return;
+        testAnswers[0][currentQuestion] = selected;
+        buttons.forEach(btn => {
+          btn.disabled = true;
+          btn.classList.remove("correct", "wrong", "selected");
+        });
+        button.classList.add("selected");
+        showFeedback("Answer recorded. Click Next to continue.", true);
+        return;
+      }
+
       buttons.forEach(btn => btn.classList.remove("correct", "wrong"));
+
+      if(testAnswers[currentLevel]){
+        testAnswers[currentLevel][currentQuestion] = selected;
+      }
 
       if(selected === answer){
         button.classList.add("correct");
@@ -908,17 +1074,37 @@
       }
     }
 
-    function checkInputAnswer(value, answer){
+    function clearFeedback(){
+      const feedback = document.getElementById("feedback");
+      feedback.className = "feedback";
+      feedback.innerText = "";
+    }
+
+    function checkInputAnswer(value, answer, instant = false, inputElement = null){
       const normalizedValue = value.trim().toLowerCase();
       const normalizedAnswer = String(answer).trim().toLowerCase();
 
-      if(normalizedValue === normalizedAnswer){
-        showFeedback("Correct answer!", true);
-        speakText("Correct");
-      } else {
-        showFeedback("Incorrect. Try again.", false);
-        speakText("Try again");
+      if(instant){
+        const requiredLength = normalizedAnswer.length;
+
+        if(normalizedValue.length < requiredLength){
+          clearFeedback();
+          if(inputElement) inputElement.dataset.lastFeedback = "";
+          return;
+        }
       }
+
+      const isCorrect = normalizedValue === normalizedAnswer;
+      const message = isCorrect ? "Correct answer!" : "Incorrect. Try again.";
+      showFeedback(message, isCorrect);
+
+      if(instant && inputElement){
+        const feedbackKey = `${normalizedValue}|${message}`;
+        if(inputElement.dataset.lastFeedback === feedbackKey) return;
+        inputElement.dataset.lastFeedback = feedbackKey;
+      }
+
+      speakText(isCorrect ? "Correct" : "Try again");
     }
 
     function showFeedback(message, correct){
@@ -927,11 +1113,54 @@
       feedback.className = `feedback show ${correct ? "correct" : "wrong"}`;
     }
 
+    function calculateTestScore(levelNumber){
+      const level = levels[levelNumber];
+      const answers = testAnswers[levelNumber] || {};
+
+      return level.questions.reduce((score, question, index) => {
+        return score + (answers[index] === question.answer ? 1 : 0);
+      }, 0);
+    }
+
+    function updateScoreSummary(){
+      const scoreSummary = document.getElementById("scoreSummary");
+      if(!scoreSummary) return;
+
+      if(!completedFinalQuiz){
+        scoreSummary.classList.remove("show");
+        return;
+      }
+
+      const preTotal = levels[0].questions.length;
+      const finalTotal = levels[5].questions.length;
+      const preScore = preTestScore === null ? 0 : preTestScore;
+      const finalScore = finalQuizScore === null ? 0 : finalQuizScore;
+      const improvement = finalScore - preScore;
+
+      document.getElementById("preTestScoreText").innerText = `${preScore} / ${preTotal}`;
+      document.getElementById("finalQuizScoreText").innerText = `${finalScore} / ${finalTotal}`;
+      document.getElementById("scoreComparisonText").innerText = improvement >= 0
+        ? `Improvement: +${improvement} question${improvement === 1 ? "" : "s"} compared with the Pre-Test.`
+        : `Final Quiz score was ${Math.abs(improvement)} question${Math.abs(improvement) === 1 ? "" : "s"} lower than the Pre-Test.`;
+
+      scoreSummary.classList.add("show");
+    }
+
     function nextQuestion(){
       const level = levels[currentLevel];
 
       if(currentQuestion < level.questions.length - 1){
         currentQuestion++;
+        renderQuestion();
+        return;
+      }
+
+      if(currentLevel === 0){
+        preTestScore = calculateTestScore(0);
+        completedPreTest = true;
+        unlockHomeLevel(1);
+        currentLevel = 1;
+        currentQuestion = 0;
         renderQuestion();
         return;
       }
@@ -951,7 +1180,10 @@
       }
 
       if(currentLevel === 5){
-        showFeedback("Final quiz completed! You finished the Burmese Numerals course.", true);
+        finalQuizScore = calculateTestScore(5);
+        completedFinalQuiz = true;
+        updateScoreSummary();
+        showFeedback(`Final Quiz completed! Your score is ${finalQuizScore} / ${levels[5].questions.length}. Return Home to compare your Pre-Test and Final Quiz scores.`, true);
       }
     }
 
@@ -963,7 +1195,7 @@
     }
 
     function startLesson(level){
-      if(level > 1 && !completedLevels[level - 1] && !(level === 5 && isQuizUnlocked())) return;
+      if(!isLevelUnlocked(level)) return;
 
       document.body.classList.add("lesson-mode");
       document.getElementById("homeView").style.display = "none";
@@ -978,11 +1210,12 @@
       document.getElementById("homeView").style.display = "block";
       renderLessonNav();
       renderHomeLevelNav();
+      updateScoreSummary();
       window.scrollTo({ top:0, behavior:"smooth" });
     }
 
     function switchLevel(level){
-      if(level > 1 && !completedLevels[level - 1] && !(level === 5 && isQuizUnlocked())) return;
+      if(!isLevelUnlocked(level)) return;
       currentLevel = level;
       currentQuestion = 0;
       renderQuestion();
@@ -1027,6 +1260,7 @@
 
     renderHomeDigits();
     renderHomeLevelNav();
+    updateScoreSummary();
   </script>
 </body>
 </html>
